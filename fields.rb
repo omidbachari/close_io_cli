@@ -19,6 +19,8 @@ def create_fields(field_name, type)
   }
 
   API_KEYS.each do |environment, api_key|
+    next if environment == :production && ARGV[3] == 'sandbox'
+
     response = conn(api_key).post do |req|
       req.url LEAD_FIELDS_URL
       req.body = payload.to_json
@@ -67,14 +69,12 @@ end
 puts 'Do you want to list or create a field? (list, create)'
 decision = ARGV[0]
 
+puts 'Got it. Working on that now.'
+
 if decision == 'list'
-  puts 'Got it. Working on that now.'
   list_fields
 elsif decision == 'create'
-  puts 'Please enter the field name:'
   field = ARGV[1]
-
-  puts 'Please enter the data type (text, number, date, datetime):'
   type = ARGV[2]
 
   if VALID_TYPES.include?(type)
@@ -83,5 +83,5 @@ elsif decision == 'create'
     puts 'Type is invalid'
   end
 else
-  puts 'Cannot understand your choice. Try again.'
+  puts 'Cannot understand your argz. Try again.'
 end
