@@ -59,6 +59,19 @@ def list_fields
   end
 end
 
+def delete_field(name)
+  API_KEYS.each do |environment, api_key|
+    next if environment == :production && ARGV[2] == 'sandbox'
+
+    response = conn(api_key).delete do |req|
+      req.url(LEAD_FIELDS_URL + name)
+    end
+
+    ap "***** FOR #{environment.upcase} *****"
+    ap response
+  end
+end
+
 def conn(api_key)
   Faraday.new(url: URL_ROOT).tap do |faraday|
     faraday.basic_auth api_key, ''
@@ -82,6 +95,10 @@ elsif decision == 'create'
   else
     puts 'Type is invalid'
   end
+elsif decision == 'delete'
+  field = ARGV[1]
+
+  delete_field(field)
 else
   puts 'Cannot understand your argz. Try again.'
 end
