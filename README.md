@@ -15,22 +15,23 @@ Rename `.env.sample` to `.env`. Add keys.
 
 To list custom fields:
 ```bash
-ruby fields.rb list
+ruby lib/close_io_cli.rb list
 ```
 
 To create custom field:
 ```bash
-ruby fields.rb create <NAME> <TYPE>
+ruby lib/close_io_cli.rb create <NAME> <TYPE>
 ```
+Note: the `TYPE` has to be one of text, number, date or datetime.
 
 To only run the script to create a custom field for staging, add `sandbox`. Example:
 ```bash
-ruby fields.rb create "US Goods" number sandbox
+ruby lib/close_io_cli.rb create "US Goods" number sandbox
 ```
 
 Note: add quotes when the name uses whitespace. Example:
 ```bash
-ruby fields.rb create "US Goods" number
+ruby lib/close_io_cli.rb create "US Goods" number
 ```
 
 ### TODO

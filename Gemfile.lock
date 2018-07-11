@@ -2,11 +2,16 @@ GEM
   remote: https://rubygems.org/
   specs:
     awesome_print (1.6.1)
+    coderay (1.1.2)
     dotenv (2.5.0)
     faraday (0.15.2)
       multipart-post (>= 1.2, < 3)
+    method_source (0.9.0)
     multipart-post (2.0.0)
     oj (3.3.9)
+    pry (0.11.3)
+      coderay (~> 1.1.0)
+      method_source (~> 0.9.0)
 
 PLATFORMS
   ruby
@@ -16,6 +21,7 @@ DEPENDENCIES
   dotenv
   faraday
   oj
+  pry
 
 BUNDLED WITH
    1.15.4

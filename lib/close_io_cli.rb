@@ -12,9 +12,9 @@ API_KEYS = {
 URL_ROOT = 'https://app.close.io/api/v1'
 LEAD_FIELDS_URL = 'custom_fields/lead/'
 
-def create_fields(field_name, type)
+def create_field(name, type)
   payload = {
-    name: field_name,
+    name: name,
     type: type
   }
 
@@ -50,7 +50,7 @@ def list_fields
 
     if response.success?
       ap "***** FOR #{environment.upcase} *****"
-      ap JSON.parse(response.body)
+      ap body
     else
       ap "Something went wrong when listing custom field for #{environment}!"
       ap body
@@ -59,16 +59,39 @@ def list_fields
   end
 end
 
-def delete_field(name)
+def delete_field(id)
   API_KEYS.each do |environment, api_key|
     next if environment == :production && ARGV[2] == 'sandbox'
 
     response = conn(api_key).delete do |req|
-      req.url(LEAD_FIELDS_URL + name)
+      req.url(LEAD_FIELDS_URL + id + '/')
     end
 
+    body = Oj.load(response.body)
+
     ap "***** FOR #{environment.upcase} *****"
-    ap response
+    ap body
+  end
+end
+
+def put_field(id, name, type)
+  payload = {
+    name: name,
+    type: type
+  }
+
+  API_KEYS.each do |environment, api_key|
+    next if environment == :production && ARGV[4] == 'sandbox'
+
+    response = conn(api_key).put do |req|
+      req.url(LEAD_FIELDS_URL + id + '/')
+      req.body = payload.to_json
+    end
+
+    body = Oj.load(response.body)
+
+    ap "***** FOR #{environment.upcase} *****"
+    ap body
   end
 end
 
@@ -79,26 +102,34 @@ def conn(api_key)
   end
 end
 
-puts 'Do you want to list or create a field? (list, create)'
 decision = ARGV[0]
-
 puts 'Got it. Working on that now.'
 
 if decision == 'list'
   list_fields
 elsif decision == 'create'
-  field = ARGV[1]
+  name = ARGV[1]
   type = ARGV[2]
 
   if VALID_TYPES.include?(type)
-    create_fields(field, type)
+    create_field(name, type)
   else
     puts 'Type is invalid'
   end
 elsif decision == 'delete'
-  field = ARGV[1]
+  name = ARGV[1]
 
-  delete_field(field)
+  delete_field(name)
+elsif decision == 'update'
+  id = ARGV[1]
+  name = ARGV[2]
+  type = ARGV[3]
+
+  if VALID_TYPES.include?(type)
+    put_field(id, name, type)
+  else
+    puts 'Type is invalid'
+  end
 else
   puts 'Cannot understand your argz. Try again.'
 end
