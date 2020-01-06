@@ -6,11 +6,14 @@ require 'dotenv/load'
 
 VALID_TYPES = %w(text number date datetime)
 API_KEYS = {
-  staging: ENV['STAGING'],
-  production: ENV['PRODUCTION']
+  staging: ENV['STAGING']#,
+  # production: ENV['PRODUCTION']
 }
 URL_ROOT = 'https://app.close.io/api/v1'
 LEAD_FIELDS_URL = 'custom_fields/lead/'
+WEBHOOKS_URL = 'webhook/'
+EVENTS_URL = 'event/'
+MERGE_URL = 'lead/merge/'
 
 def create_field(name, type)
   payload = {
@@ -56,6 +59,72 @@ def list_fields
       ap body
       exit
     end
+  end
+end
+
+def list_webhooks
+  API_KEYS.each do |environment, api_key|
+    response = conn(api_key).get do |req|
+      req.url WEBHOOKS_URL
+    end
+
+    ap Oj.load(response.body)
+  end
+end
+
+
+def create_webhooks
+  payload = {
+    url: 'https://app.joinhomebase.com/close_io_webhook/execute',
+    events: [{
+      object_type: 'lead',
+      action: 'merged'
+    }]
+  }
+
+  API_KEYS.each do |environment, api_key|
+    response = conn(api_key).post do |req|
+      req.url WEBHOOKS_URL
+      req.body = payload.to_json
+    end
+
+    puts Oj.load(response.body)
+  end
+end
+
+def merge_leads
+  payload = {
+    source: 'lead_FPmLPz7djwiikF5Jut6jMYKj5V5xoW3ojDZ7AqJauLE',
+    destination: 'lead_rBQBddZ6kl3fgwWbA8T4sjDoIXytX1EZ8ZFyD3pafMt'
+  }
+
+  API_KEYS.each do |environment, api_key|
+    response = conn(api_key).post do |req|
+      req.url MERGE_URL
+      req.body = payload.to_json
+    end
+
+    puts Oj.load(response.body)
+  end
+end
+
+def list_events
+  API_KEYS.each do |environment, api_key|
+    response = conn(api_key).get do |req|
+      req.url EVENTS_URL + 'object_type=lead/'
+    end
+
+    puts Oj.load(response.body)
+  end
+end
+
+def delete_webhook
+  API_KEYS.each do |environment, api_key|
+    response = conn(api_key).delete do |req|
+      req.url WEBHOOKS_URL + 'whsub_1AVBkJRXn2CSrkuxDaJMXh/'
+    end
+    ap response
+    puts Oj.load(response.body)
   end
 end
 
@@ -105,7 +174,17 @@ end
 decision = ARGV[0]
 puts 'Got it. Working on that now.'
 
-if decision == 'list'
+if decision == 'merge_leads'
+  merge_leads
+elsif decision == 'list_events'
+  list_events
+elsif decision == 'delete_webhook'
+  delete_webhook
+elsif decision == 'create_webhooks'
+  create_webhooks
+elsif decision == 'list_webhooks'
+  list_webhooks
+elsif decision == 'list'
   list_fields
 elsif decision == 'create'
   name = ARGV[1]
